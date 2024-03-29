@@ -99,6 +99,7 @@ if __name__== '__main__':
         """,
         unsafe_allow_html=True,
     )
+
     preco_minimo, preco_maximo = st.sidebar.select_slider('Preço Mínimo/Máximo das FIIs', options=list(range(1000)), value=(10,100))
     
     st.sidebar.write('Considerar rendimentos entre:')

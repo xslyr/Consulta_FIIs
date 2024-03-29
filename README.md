@@ -11,5 +11,3 @@ Ou execute o comando com o parametro --offline para buscar o arquivo csv local. 
 
 `streamlit run streamlit_app.py -- --offline`
 
-Acesse via streamlit cloud:
-[https://consultafiis-mzgsbxhgpm7mwtkjrc7kuv.streamlit.app/]

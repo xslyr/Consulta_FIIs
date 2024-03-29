@@ -100,7 +100,7 @@ if __name__== '__main__':
         """,
         unsafe_allow_html=True,
     )
-    preco_maximo = st.sidebar.slider('Preço Máximo da FIIs', min_value=0, max_value=1000, value=120)
+    preco_maximo = st.sidebar.slider('Preço Máximo da FIIs', min_value=1, max_value=1000, value=120)
     
     st.sidebar.write('Considerar rendimentos entre:')
     data_atual = datetime.now()
@@ -111,7 +111,7 @@ if __name__== '__main__':
     historico['Data_pagamento'] = pd.to_datetime(historico['Data_pagamento'])
     chart_data = historico.loc[ historico.Data_pagamento.between(data_antiga, data_atual) ]
     all_tickers = chart_data['Ticker'].unique()
-    default_tickers = tickers.loc[ (tickers['Preço'].between(0,preco_maximo)) & (tickers.Ticker.isin(chart_data.Ticker))].Ticker.tolist()
+    default_tickers = tickers.loc[ (tickers['Preço'].between(1,preco_maximo)) & (tickers.Ticker.isin(chart_data.Ticker))].Ticker.tolist()
     
     selected_tickers = st.sidebar.multiselect('Selecione as ações:', all_tickers, default=default_tickers )
     filtered_data = chart_data[chart_data['Ticker'].isin(selected_tickers)]

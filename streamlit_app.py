@@ -1,5 +1,5 @@
 
-import requests, random_header, json, time, base64, random
+import sys, requests, random_header, json, time, base64, random
 import streamlit as st
 import pandas as pd
 from stqdm import stqdm
@@ -71,22 +71,31 @@ def inicializacao():
         mybar.empty()
     
     historico.reset_index(drop=True, inplace=True)
-    historico['Data_pagamento'] = pd.to_datetime(historico['Data_pagamento'])
     return tickers, historico
 
 
 if __name__== '__main__':
 
     # --- carregando os dados ---#
-    tickers, historico = inicializacao()
-    
+    if any(map(lambda x: '--offline' in x, sys.argv)):
+        try:
+            tickers = pd.read_csv('tickers.csv')
+            historico = pd.read_csv('historico.csv')
+        except:
+            tickers, historico = inicializacao()
+            tickers.to_csv('tickers.csv', index=False)
+            historico.to_csv('historico.csv', index=False)
+    else:
+        tickers, historico = inicializacao()
+            
+            
     # --- sidebar --- #
     st.sidebar.title('Opções')
     st.markdown(
         """
         <style>
             div[data-testid=stSidebarUserContent] { padding-top: 0px; }
-            div[data-testid=stAppViewBlockContainer] { width:90%!important; max-width:100%!important;}
+            div[data-testid=stAppViewBlockContainer] { width:90%!important; max-width:100%!important; padding-top:1rem!important;}
         </style>
         """,
         unsafe_allow_html=True,
@@ -99,6 +108,7 @@ if __name__== '__main__':
     data_inicio = st.sidebar.date_input('Data Inicial', value=data_antiga)
     data_fim = st.sidebar.date_input('Data Final', value=data_atual)
     
+    historico['Data_pagamento'] = pd.to_datetime(historico['Data_pagamento'])
     chart_data = historico.loc[ historico.Data_pagamento.between(data_antiga, data_atual) ]
     all_tickers = chart_data['Ticker'].unique()
     default_tickers = tickers.loc[ (tickers['Preço'].between(0,preco_maximo)) & (tickers.Ticker.isin(chart_data.Ticker))].Ticker.tolist()
@@ -108,15 +118,16 @@ if __name__== '__main__':
     
     # --- pagina principal --- #
     
-    tab1, tab2 = st.tabs(['|  📈 Gráfico de Rendimento  |','|  🗃 Tabela de Preços e Categoria  |'])
-    
-    with tab1:
-        st.write("Comparativo de rendimentos: ")
-        st.line_chart(data=filtered_data, x='Data_pagamento', y='Rendimentos', color='Ticker')
-    
-    with tab2:
-        st.write("FIIs listadas: ")
-        st.dataframe(tickers.loc[ tickers.Ticker.isin(selected_tickers)])
+    with st.container():
+            
+        st.header(':chart_with_upwards_trend: Comparativo de FIIs')
+        tab1, tab2 = st.tabs([' Rendimentos Mensais ',' Preços e Categoria  |'])
+        
+        with tab1:
+            st.line_chart(data=filtered_data, x='Data_pagamento', y='Rendimentos', color='Ticker')
+        
+        with tab2:
+            st.dataframe(tickers.loc[ tickers.Ticker.isin(selected_tickers)])
 
 
 

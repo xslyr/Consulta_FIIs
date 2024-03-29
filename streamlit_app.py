@@ -2,7 +2,6 @@
 import sys, requests, random_header, json, time, base64, random
 import streamlit as st
 import pandas as pd
-from stqdm import stqdm
 from datetime import datetime, timedelta
 from bs4 import BeautifulSoup
 from concurrent.futures import ThreadPoolExecutor, as_completed, wait
@@ -100,7 +99,7 @@ if __name__== '__main__':
         """,
         unsafe_allow_html=True,
     )
-    preco_maximo = st.sidebar.slider('Preço Máximo da FIIs', min_value=0, max_value=1000, value=120)
+    preco_minimo, preco_maximo = st.sidebar.select_slider('Preço Mínimo/Máximo das FIIs', options=list(range(1000)), value=(10,100))
     
     st.sidebar.write('Considerar rendimentos entre:')
     data_atual = datetime.now()
@@ -111,7 +110,7 @@ if __name__== '__main__':
     historico['Data_pagamento'] = pd.to_datetime(historico['Data_pagamento'])
     chart_data = historico.loc[ historico.Data_pagamento.between(data_antiga, data_atual) ]
     all_tickers = chart_data['Ticker'].unique()
-    default_tickers = tickers.loc[ (tickers['Preço'].between(0,preco_maximo)) & (tickers.Ticker.isin(chart_data.Ticker))].Ticker.tolist()
+    default_tickers = tickers.loc[ (tickers['Preço'].between(preco_minimo,preco_maximo)) & (tickers.Ticker.isin(chart_data.Ticker))].Ticker.tolist()
     
     selected_tickers = st.sidebar.multiselect('Selecione as ações:', all_tickers, default=default_tickers )
     filtered_data = chart_data[chart_data['Ticker'].isin(selected_tickers)]
@@ -121,13 +120,13 @@ if __name__== '__main__':
     with st.container():
             
         st.header(':chart_with_upwards_trend: Comparativo de FIIs')
-        tab1, tab2 = st.tabs([' Rendimentos Mensais ',' Preços e Categoria  |'])
+        tab1, tab2 = st.tabs([' Rendimentos Mensais ',' Preços e Categoria '])
         
         with tab1:
             st.line_chart(data=filtered_data, x='Data_pagamento', y='Rendimentos', color='Ticker')
         
         with tab2:
-            st.dataframe(tickers.loc[ tickers.Ticker.isin(selected_tickers)])
+            st.data_editor(tickers.loc[ tickers.Ticker.isin(selected_tickers)])
 
 
 
